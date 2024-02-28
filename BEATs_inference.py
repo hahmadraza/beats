@@ -27,7 +27,7 @@ def parse_opt():
     """Parses command-line arguments for BEATs inference, setting inference options and model configurations."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "weights/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt", help="model path")
-    parser.add_argument("--input_file", type=str, help="input audio file")
+    parser.add_argument("--input_file", type=str, help="input audio file", required=True)
     parser.add_argument("--conf_thres", type=float, default=0.25, help="confidence threshold")
     parser.add_argument("--event_len", type=int, default=500, help="Minimum event length in miliseconds")
 
@@ -37,18 +37,21 @@ def parse_opt():
 
 if __name__ == "__main__":
     opt = parse_opt()
-    labels_df = pd.read_csv("class_labels_indices.csv")
-    labels_mapper = labels_df.set_index('mid')['display_name'].to_dict()
-    output_file_name = opt.input_file.split('/')[-1].split('.')[0]+'.txt'
-    output_path = Path(opt.input_file).parents[0] / output_file_name
-    if os.path.exists(output_path):
-        os.remove(output_path)
-    print(f'Generating output file at {output_path}')
     checkpoint = torch.load(opt.weights)
     cfg = BEATsConfig(checkpoint['cfg'])
     BEATs_model = BEATs(cfg)
     BEATs_model.load_state_dict(checkpoint['model'])
     BEATs_model.eval()
+
+    labels_df = pd.read_csv(ROOT /"class_labels_indices.csv")
+    labels_mapper = labels_df.set_index('mid')['display_name'].to_dict()
+
+    output_file_name = opt.input_file.split('/')[-1].split('.')[0]+'.txt'
+    output_path = Path(opt.input_file).parents[0] / output_file_name
+    if os.path.exists(output_path):
+        os.remove(output_path)
+    print(f'Generating output file at {output_path}')
+
     waveform, sample_rate = torchaudio.load(opt.input_file)
     waveform = torch.mean(waveform, dim=0)
 
