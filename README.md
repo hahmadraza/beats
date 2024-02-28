@@ -1,4 +1,6 @@
 # beats
+
+Clone the repository and install requirements
 ```
 git clone https://github.com/hahmadraza/beats.git
 cd beats
