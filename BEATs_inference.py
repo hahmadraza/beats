@@ -34,6 +34,22 @@ def parse_opt():
     opt = parser.parse_args()
     return opt
 
+def find_consecutive_sequences(arr):
+    sequences = []
+    start, end = None, None
+
+    for i in range(len(arr)):
+        if i == 0 or arr[i] != arr[i - 1] + 1:
+            # Start of a new sequence
+            start = i
+        end = i
+
+        if i == len(arr) - 1 or arr[i] != arr[i + 1] - 1:
+            # End of the current sequence
+            sequences.append((start, end))
+
+    return sequences
+
 
 if __name__ == "__main__":
     opt = parse_opt()
@@ -56,30 +72,56 @@ if __name__ == "__main__":
     waveform = torch.mean(waveform, dim=0)
 
     # Specify chunk size and step
-    window_size = opt.event_len #in miliseconds
+    window_size = 500 #in miliseconds
+
     chunk_size = int((window_size/1000)*sample_rate)
 
-    step = 100 # step size in miliseconds
-    step = int((step/1000)*sample_rate)
-    # step = chunk_size
+    step = chunk_size 
 
     # Calculate the number of chunks
     num_chunks = (len(waveform) - chunk_size) // step + 1
 
     # Create a list of chunks
     chunks = {int((i * step*1000)/sample_rate): waveform[i * step: i * step + chunk_size] for i in range(num_chunks)}
+    result_data = {}
 
     for key, value in chunks.items():
         audio_input = value.unsqueeze(0)
         padding_mask = torch.zeros(audio_input.shape).bool()
 
         probs = BEATs_model.extract_features(audio_input, padding_mask=padding_mask)[0]
+        top5_label_prob = [item[0] for item in zip(*probs.topk(k=5))][0].tolist()
+        top5_label_idx = [item[1] for item in zip(*probs.topk(k=5))][0].tolist()
+        
+        top5_label = [checkpoint['label_dict'][label_idx] for label_idx in top5_label_idx]
+        top5_label = [labels_mapper[label] for label in top5_label]
 
-        for i, (top5_label_prob, top5_label_idx) in enumerate(zip(*probs.topk(k=5))):
-            top5_label = [checkpoint['label_dict'][label_idx.item()] for label_idx in top5_label_idx]
-            top5_label = [labels_mapper[label] for label in top5_label]
+        for l, p in zip(top5_label,top5_label_prob):
+            if p>=opt.conf_thres:
+                if l in result_data:
+                    result_data[l]["timestamps"].append(key)
+                    result_data[l]["probabilities"].append(p)
+                else:
+                    result_data[l] = {"timestamps": [key], "probabilities": [p]}
+        
+    final_data = []
+    for key in result_data.keys():
+        timestamps = result_data[key]["timestamps"]
+        probabilities = result_data[key]["probabilities"]
+        timestamps = [int(t/window_size) for t in timestamps]
+        consecutive_sequences = find_consecutive_sequences(timestamps)
+        for start_ind, end_ind in consecutive_sequences:
+            start_timestamp = timestamps[start_ind]*window_size
+            end_timestamp = timestamps[end_ind]*window_size + window_size
+            if start_ind==end_ind:
+                avg_prob = probabilities[start_ind]
+            else:
+                avg_prob = sum(probabilities[start_ind:end_ind])/(end_ind-start_ind)
 
-            for l, p in zip(top5_label,top5_label_prob):
-                if p>=opt.conf_thres:
-                    line = f'{key}|{l}|{round(p.cpu().item(),2)}\n'
-                    insert_line(output_path, line)
+            if (end_timestamp-start_timestamp)>=opt.event_len:
+                final_data.append([start_timestamp, end_timestamp, key, avg_prob])
+    sorted_results = sorted(final_data, key=lambda x: x[0])
+    for arr in sorted_results:
+        line = f'{arr[0]}|{arr[1]}|{arr[2]}|{round(arr[3],3)}\n'
+        insert_line(output_path, line)
+    
