@@ -13,14 +13,14 @@ cd beats
 pip install -r requirements.txt
 ```
 Downlod weights from [here](https://drive.google.com/file/d/1233NK6I3z9TEUJobSHqd2B4RNtWn0UHR/view?usp=drivesdk) and put them inside weights folder in root directory 
-
+```
 |--beats
 |  |--weights
       |--BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt
    |--BEATS.py
    |--BEATS_inference.py
    ...
-   
+```
 ## Creating binary with pyinstaller
 For Linux/MacOs
 ```
