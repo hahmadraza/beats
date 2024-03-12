@@ -1,6 +1,5 @@
 import argparse
 import torch
-import torchaudio
 from BEATs import BEATs, BEATsConfig
 import sys
 from pathlib import Path
