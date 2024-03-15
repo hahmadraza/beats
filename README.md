@@ -32,8 +32,7 @@ For Windows
 pyinstaller --onefile --clean --add-data "class_labels_indices.csv;." BEATs_inference.py
 ```
 
-Generated executeable will be locaterd in dist folder
-Run following command to get list of arguments to run the exe file.
+Generated executeable will be locaterd in dist folder. Run following command to get list of arguments to run the exe file.
 ```
 BEATs_inference.exe --help
 ```
