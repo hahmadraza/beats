@@ -106,12 +106,12 @@ class FileAudioInputStream:
 def parse_opt():
     """Parses command-line arguments for BEATs inference, setting inference options and model configurations."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--weights", nargs="+", type=str, default=ROOT / "weights/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt", help="model path")
-    parser.add_argument("--input_file", type=str, help="input audio file", required=True)
-    parser.add_argument("--conf_thres", type=float, default=0.25, help="confidence threshold")
-    parser.add_argument("--event_len", type=int, default=500, help="Minimum event length in miliseconds")
-    parser.add_argument("--ringbuffer_length", type=int, default=64000, help="Ringbuffer length")
-    parser.add_argument("--chunk_length", type=int, default=1024, help="Chunk length")
+    parser.add_argument("--weights", type=str, default="", required=True, help="(Required) type=str. Path to model weights file.")
+    parser.add_argument("--input_file", type=str, default="", required=True, help="(Required) type=str. Path to input audio file.")
+    parser.add_argument("--conf_thres", type=float, default=0.25, help="(Optional) type=float, default=0.25. Sets the minimum confidence threshold for detections. Events detected with confidence below this threshold will be discarded. Accepted value range [0.0, 1.0].")
+    parser.add_argument("--event_len", type=int, default=500, help="(Optional) type=int, default=500. Sets the minimum event length in miliseconds. Events detected with length below this will be discarded. Accepted value range [1, audio_length_in_miliseconds].")
+    parser.add_argument("--ringbuffer_length", type=int, default=64000, help="(Optional) type=int, default=64000. Number of frames in buffer. Accepted value range [1, total_frames_in_audio].")
+    parser.add_argument("--chunk_length", type=int, default=1024, help="(Optional) type=int, default=1024. Number of frames to add in buffer in one iteration. Accepted value rane [1, ringbuffer_length].")
 
     opt = parser.parse_args()
     return opt
