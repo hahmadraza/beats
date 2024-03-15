@@ -38,7 +38,7 @@ Run following command to get list of arguments to run the exe file.
 BEATs_inference.exe --help
 ```
 ```
-usage: BEATs_inference.py [-h] --weights WEIGHTS --input_file INPUT_FILE [--conf_thres CONF_THRES]
+usage: BEATs_inference.exe [-h] --weights WEIGHTS --input_file INPUT_FILE [--conf_thres CONF_THRES]
                           [--event_len EVENT_LEN] [--ringbuffer_length RINGBUFFER_LENGTH]
                           [--chunk_length CHUNK_LENGTH]
 
