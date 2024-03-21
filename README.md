@@ -24,12 +24,12 @@ Downlod weights from [here](https://drive.google.com/file/d/1233NK6I3z9TEUJobSHq
 ## Creating binary with pyinstaller
 For Linux/MacOs
 ```
-pyinstaller --onefile --clean --add-data "class_labels_indices.csv:." BEATs_inference.py
+pyinstaller --onedir --clean --add-data "class_labels_indices.csv:." BEATs_inference.py
 ```
 
 For Windows
 ```
-pyinstaller --onefile --clean --add-data "class_labels_indices.csv;." BEATs_inference.py
+pyinstaller --onedir --clean --add-data "class_labels_indices.csv;." BEATs_inference.py
 ```
 
 Generated executeable will be locaterd in dist folder. Run following command to get list of arguments to run the exe file.
